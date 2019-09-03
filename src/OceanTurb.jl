@@ -95,6 +95,7 @@ export # This file, core functionality:
     KPP,
     ModularKPP,
     PacanowskiPhilander,
+    TKE,
     KPP_TKE
 
 using
@@ -115,7 +116,7 @@ abstract type Grid{T, A} end
 abstract type Timestepper end
 abstract type AbstractField{A, G, T} end
 abstract type AbstractSolution{N, T} <: FieldVector{N, T} end
-abstract type AbstractModel{T, G, TS} end
+abstract type AbstractModel{TS, G, T} end
 
 #
 # Core OceanTurb.jl functionality
@@ -130,8 +131,8 @@ include("equations.jl")
 include("timesteppers.jl")
 
 mutable struct Clock{T}
-  time :: T
-  iter :: Int
+    time :: T
+    iter :: Int
 end
 
 Clock() = Clock(0.0, 0)
@@ -209,6 +210,7 @@ end
 include("models/diffusion.jl")
 include("models/k_profile_parameterization.jl")
 include("models/modular_kpp.jl")
+include("models/tke_equation.jl")
 include("models/pacanowski_philander.jl")
 
 # Convenient utilities for plotting
