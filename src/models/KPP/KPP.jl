@@ -216,9 +216,11 @@ i is a face index.
 
 "Returns the parameterization for unresolved KE at face point i."
 @inline function unresolved_kinetic_energy(h, Bz, Qb, CKE, CKE₀, g, α, β, CKE2, CKE3)
-    tmp = CKE * h^(4/3) * sqrt(max(0, Bz)) * max(0, Qb)^(1/3) + CKE₀
-    tmp += CKE2 * max(0, Bz) * h^2
-    tmp += CKE3 * max(0, h * Qb)^(2/3)
+    N² = max(0, Bz)
+    w1 = max(0, h * Qb)^(1/3)
+    w2 = sqrt(N² * h^2)
+    tmp = CKE * w1 * w2 + CKE₀
+    tmp += CKE2 * w1^(1-CKE3) * w2^CKE3
     return tmp
 end
 
