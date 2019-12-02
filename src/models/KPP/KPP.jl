@@ -234,7 +234,7 @@ Returns the bulk Richardson number of `model` at face `i`.
 """
 @propagate_inbounds function bulk_richardson_number(
             U, V, T, S, Qb::TT, CKE::TT, CKE₀::TT, CSL::TT,
-            g::TT, α::TT, β::TT, i) where TT
+            g::TT, α::TT, β::TT, CKE2::TT, CKE3::TT, i) where TT
 
     h = -U.grid.zf[i]
     # (h - hε) * ΔB
@@ -253,7 +253,7 @@ end
 @propagate_inbounds bulk_richardson_number(m, i) = bulk_richardson_number(
     m.solution.U, m.solution.V, m.solution.T, m.solution.S,
     m.state.Qb, m.parameters.CKE, m.parameters.CKE₀, m.parameters.CSL, m.constants.g,
-    m.constants.α, m.constants.β, i)
+    m.constants.α, m.constants.β,m.parameters.CKE2,m.parameters.CKE3, i)
 
 """
     mixing_depth(model)
