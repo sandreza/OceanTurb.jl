@@ -39,6 +39,8 @@ Construct KPP parameters.
 
     CRi   :: T  = 0.3   # Critical bulk Richardson number
     CKE   :: T  = 4.32  # Unresolved turbulence parameter
+    CKE2   :: T  = 0.0  # Unresolved turbulence parameter 2
+    CKE3   :: T  = 0.0  # Unresolved turbulence parameter 3
     CKE₀  :: T  = 1e-11 # Minimum unresolved turbulence kinetic energy
 
     KU₀   :: T  = 1e-6  # Interior viscosity for velocity
@@ -145,7 +147,7 @@ function Model(; N=10, L=1.0,
     clock = Clock()
     state = State()
 
-    return Model(clock, grid, timestepper, solution, bcs, parameters, constants, state, 
+    return Model(clock, grid, timestepper, solution, bcs, parameters, constants, state,
                  forcing)
 end
 
@@ -213,8 +215,16 @@ i is a face index.
 @propagate_inbounds Δ(c, CSL, i) = surface_layer_average(c, CSL, i) - onface(c, i)
 
 "Returns the parameterization for unresolved KE at face point i."
+@inline function unresolved_kinetic_energy(h, Bz, Qb, CKE, CKE₀, g, α, β, CKE2, CKE3)
+    tmp = CKE * h^(4/3) * sqrt(max(0, Bz)) * max(0, Qb)^(1/3) + CKE₀
+    tmp += CKE2 * max(0, Bz) * h^2
+    tmp += CKE3 * max(0, h * Qb)^(2/3)
+    return tmp
+end
+
 @inline function unresolved_kinetic_energy(h, Bz, Qb, CKE, CKE₀, g, α, β)
-    return CKE * h^(4/3) * sqrt(max(0, Bz)) * max(0, Qb)^(1/3) + CKE₀
+    tmp = CKE * h^(4/3) * sqrt(max(0, Bz)) * max(0, Qb)^(1/3) + CKE₀
+    return tmp
 end
 
 """
@@ -231,7 +241,7 @@ Returns the bulk Richardson number of `model` at face `i`.
     h⁺ΔB = h * (one(TT) - CSL/2) * g * (α*Δ(T, CSL, i) - β*Δ(S, CSL, i))
 
     KE = (Δ(U, CSL, i)^2 + Δ(V, CSL, i)^2
-              + unresolved_kinetic_energy(h, ∂B∂z(T, S, g, α, β, i), Qb, CKE, CKE₀, g, α, β))
+              + unresolved_kinetic_energy(h, ∂B∂z(T, S, g, α, β, i), Qb, CKE, CKE₀, g, α, β, CKE2, CKE3))
 
     if KE == 0 && h⁺ΔB == 0 # Alistar Adcroft's theorem
         return -zero(TT)
