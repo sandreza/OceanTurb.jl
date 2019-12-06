@@ -220,7 +220,7 @@ i is a face index.
     w1 = max(0, h * Qb)^(1/3)
     w2 = sqrt(N² * h^2)
     tmp = CKE * w1 * w2 + CKE₀
-    tmp += CKE2 * w1 * h #CKE has to have units of N
+    tmp += CKE2 * CKE3 * w1 * h #CKE3 has to have units of N
     return tmp
 end
 
