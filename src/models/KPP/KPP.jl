@@ -41,6 +41,7 @@ Construct KPP parameters.
     CKE   :: T  = 4.32  # Unresolved turbulence parameter
     CKE2   :: T  = 0.0  # Unresolved turbulence parameter 2
     CKE3   :: T  = 0.0  # Unresolved turbulence parameter 3
+    CKE4 :: T = 0.0 #Unresolved turbulence parameter 4
     CKE₀  :: T  = 1e-11 # Minimum unresolved turbulence kinetic energy
 
     KU₀   :: T  = 1e-6  # Interior viscosity for velocity
@@ -215,12 +216,13 @@ i is a face index.
 @propagate_inbounds Δ(c, CSL, i) = surface_layer_average(c, CSL, i) - onface(c, i)
 
 "Returns the parameterization for unresolved KE at face point i."
-@inline function unresolved_kinetic_energy(h, Bz, Qb, CKE, CKE₀, g, α, β, CKE2, CKE3)
+@inline function unresolved_kinetic_energy(h, Bz, Qb, CKE, CKE₀, g, α, β, CKE2, CKE3, CKE4)
     N² = max(0, Bz)
     w1 = max(0, h * Qb)^(1/3)
     w2 = sqrt(N² * h^2)
     tmp = CKE * w1 * w2 + CKE₀
-    tmp += CKE2 * CKE3 * w1 * h #CKE3 has to have units of N
+    tmp += CKE2 * (CKE3 * h)^(1+CKE4) * w1^(1-CKE4) #CKE3 has to have units of N
+    # tmp += CKE2 * w1^CKE3 * (w2)^(2-CKE3)
     return tmp
 end
 
@@ -236,14 +238,14 @@ Returns the bulk Richardson number of `model` at face `i`.
 """
 @propagate_inbounds function bulk_richardson_number(
             U, V, T, S, Qb::TT, CKE::TT, CKE₀::TT, CSL::TT,
-            g::TT, α::TT, β::TT, CKE2::TT, CKE3::TT, i) where TT
+            g::TT, α::TT, β::TT, CKE2::TT, CKE3::TT, CKE4::TT, i) where TT
 
     h = -U.grid.zf[i]
     # (h - hε) * ΔB
     h⁺ΔB = h * (one(TT) - CSL/2) * g * (α*Δ(T, CSL, i) - β*Δ(S, CSL, i))
 
     KE = (Δ(U, CSL, i)^2 + Δ(V, CSL, i)^2
-              + unresolved_kinetic_energy(h, ∂B∂z(T, S, g, α, β, i), Qb, CKE, CKE₀, g, α, β, CKE2, CKE3))
+              + unresolved_kinetic_energy(h, ∂B∂z(T, S, g, α, β, i), Qb, CKE, CKE₀, g, α, β, CKE2, CKE3, CKE4))
 
     if KE == 0 && h⁺ΔB == 0 # Alistar Adcroft's theorem
         return -zero(TT)
@@ -255,7 +257,7 @@ end
 @propagate_inbounds bulk_richardson_number(m, i) = bulk_richardson_number(
     m.solution.U, m.solution.V, m.solution.T, m.solution.S,
     m.state.Qb, m.parameters.CKE, m.parameters.CKE₀, m.parameters.CSL, m.constants.g,
-    m.constants.α, m.constants.β,m.parameters.CKE2,m.parameters.CKE3, i)
+    m.constants.α, m.constants.β,m.parameters.CKE2,m.parameters.CKE3, m.parameters.CKE4, i)
 
 """
     mixing_depth(model)
