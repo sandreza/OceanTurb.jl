@@ -242,7 +242,9 @@ Returns the bulk Richardson number of `model` at face `i`.
 
     h = -U.grid.zf[i]
     # (h - hε) * ΔB
-    h⁺ΔB = h * (one(TT) - CSL/2) * g * (α*Δ(T, CSL, i) - β*Δ(S, CSL, i))
+    # h⁺ΔB = h * (one(TT) - CSL/2) * g * (α*Δ(T, CSL, i) - β*Δ(S, CSL, i))
+    # get rid of the CSL in the numerator
+    h⁺ΔB = h * g * (α*Δ(T, CSL, i) - β*Δ(S, CSL, i))
 
     KE = (Δ(U, CSL, i)^2 + Δ(V, CSL, i)^2
               + unresolved_kinetic_energy(h, ∂B∂z(T, S, g, α, β, i), Qb, CKE, CKE₀, g, α, β, CKE2, CKE3, CKE4))
