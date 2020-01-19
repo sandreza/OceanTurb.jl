@@ -292,7 +292,8 @@ function mixing_depth(m)
 
     # Main case: mixing depth is in the interior.
     else # Ri₁ > CRi
-        ΔRi = bulk_richardson_number(m, ih₁+1) - Ri₁ # <0 linearly interpolate to find h.
+        ihmod = maximum([ih₁-2, 1]) #utilize the stratification two gridpoints below
+        ΔRi = bulk_richardson_number(m, ihmod+1) - Ri₁ # <0 linearly interpolate to find h.
         # x = x₀ + Δx * (y-y₀) / Δy
         @inbounds z★ = m.grid.zf[ih₁] + Δf(m.grid, ih₁) * (m.parameters.CRi - Ri₁) / ΔRi
     end
