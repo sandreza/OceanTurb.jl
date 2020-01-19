@@ -273,7 +273,8 @@ function mixing_depth(m)
     # Descend through grid until Ri rises above critical value
     while ih₁ > 1 && Ri₁ < m.parameters.CRi
         ih₁ -= 1 # descend
-        @inbounds Ri₁ = bulk_richardson_number(m, ih₁)
+        ihmod = maximum([ih₁-2, 1]) #utilize the stratification two gridpoints below
+        @inbounds Ri₁ = bulk_richardson_number(m, ihmod)
     end
 
     # Edge cases:
