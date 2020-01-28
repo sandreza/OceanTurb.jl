@@ -5,6 +5,7 @@ using OceanTurb, Plots
 include("hook.jl")
 st = pwd()
 les = OceananigansData(st * "/nocurv2.jld2")
+curved = true
 flexible = true
 if flexible
     NN = sqrt(les.α * les.g * les.bottom_T)
@@ -31,6 +32,9 @@ zp = collect(model.grid.zc)
 
 # get average of initial condition of LES
 T⁰ = avg(les.T⁰, N)
+if curved
+    T⁰ = avg(T[:,1], N)
+end
 # set equal to initial condition of parameterization
 model.solution.T[1:N] = copy(T⁰)
 # Set boundary conditions
@@ -51,8 +55,12 @@ for i in 1:Nt
     @. 𝒢[:,i] = model.solution.T[1:N]
 end
 
-for i in 1:20:Nt
+for i in 1:10:Nt
     p1 = scatter(𝒢[:, i], zp, legend = false)
-    plot!(les.T[:,ti[i]], les.z)
+    if curved
+        plot!(T[:,ti[i]], z)
+    else
+        plot!(les.T[:,ti[i]], les.z)
+    end
     display(p1)
 end
