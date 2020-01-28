@@ -28,7 +28,7 @@ function atomic_backward_euler_benchmark(m, Δt)
 
     @printf "% 24s:" "calc diffusive lhs"
     @btime OceanTurb.calc_diffusive_lhs!($Δt, $(m.timestepper.lhs), $(m.timestepper.eqn.K), $(m.solution), $m)
-    
+
     @printf "% 24s:" "update solution"
     @btime OceanTurb.backward_euler_update!($(m.timestepper.rhs), $(m.timestepper.lhs), $(m.solution), $Δt)
 
@@ -83,4 +83,3 @@ for N in Ns
     m.bcs.c.top = BoundaryCondition(Gradient, bc)
     atomic_backward_euler_benchmark(m, Δt)
 end
-
