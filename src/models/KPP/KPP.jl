@@ -221,7 +221,8 @@ i is a face index.
     w1 = max(0, h * Qb)^(1/3)
     w2 = sqrt(N² * h^2)
     tmp = CKE * w1 * w2 + CKE₀
-    tmp += CKE2 * (CKE3 * h)^(1+CKE4) * w1^(1-CKE4) #CKE3 has to have units of N
+    tmp += CKE2 * (w2)^(1+CKE4) * w1^(1-CKE4)
+    # tmp += CKE2 * (CKE3 * h)^(1+CKE4) * w1^(1-CKE4) #CKE3 has to have units of N
     # tmp += CKE2 * w1^CKE3 * (w2)^(2-CKE3)
     return tmp
 end
@@ -266,7 +267,7 @@ end
 
 Calculate the mixing depth 'h' for `model`.
 """
-function mixing_depth(m)
+function mixing_depth_old(m)
     ih₁ = m.grid.N + 1 # start at top.
     @inbounds Ri₁ = bulk_richardson_number(m, ih₁) # should be 0.
 
@@ -292,6 +293,49 @@ function mixing_depth(m)
     # Main case: mixing depth is in the interior.
     else # Ri₁ > CRi
         ΔRi = bulk_richardson_number(m, ih₁+1) - Ri₁ # <0 linearly interpolate to find h.
+        # x = x₀ + Δx * (y-y₀) / Δy
+        @inbounds z★ = m.grid.zf[ih₁] + Δf(m.grid, ih₁) * (m.parameters.CRi - Ri₁) / ΔRi
+    end
+
+    -z★ < 0 && @warn "mixing depth $(-z★) is negative"
+
+    return -z★ # "depth" is negative height.
+end
+
+
+"""
+    mixing_depth_new(model)
+
+Calculate the mixing depth 'h' for `model`.
+"""
+function mixing_depth(m)
+    ih₁ = m.grid.N + 1 # start at top.
+    @inbounds Ri₁ = bulk_richardson_number(m, ih₁) # should be 0.
+
+    # Descend through grid until Ri rises above critical value
+    while ih₁ > 1 && Ri₁ < m.parameters.CRi
+        ih₁ -= 1 # descend
+        ihmod = maximum([ih₁-1 1]) #stratification below
+        @inbounds Ri₁ = bulk_richardson_number(m, ihmod)
+    end
+
+    # Edge cases:
+    # 1. Mixing depth is at the top of the domain (z=0):
+    if ih₁ == m.grid.N + 1
+        @inbounds z★ = m.grid.zf[ih₁]
+
+    # 2. Mixing depth is whole domain because Ri is always less than CRi:
+    elseif ih₁ == 1 && Ri₁ < m.parameters.CRi
+        @inbounds z★ = m.grid.zf[ih₁]
+
+    # 3. Ri is infinite somewhere inside the domain.
+    elseif !isfinite(Ri₁)
+        @inbounds z★ = m.grid.zc[ih₁]
+
+    # Main case: mixing depth is in the interior.
+    else # Ri₁ > CRi
+        ihmod = maximum([ih₁-1 1])
+        ΔRi = bulk_richardson_number(m, ihmod+1) - Ri₁ # <0 linearly interpolate to find h.
         # x = x₀ + Δx * (y-y₀) / Δy
         @inbounds z★ = m.grid.zf[ih₁] + Δf(m.grid, ih₁) * (m.parameters.CRi - Ri₁) / ΔRi
     end
