@@ -222,7 +222,7 @@ i is a face index.
     w2 = sqrt(N² * h^2)
     tmp = CKE * w1 * w2 + CKE₀
     tmp += CKE2 * (w2)^(1+CKE4) * w1^(1-CKE4)
-    # tmp += CKE2 * (CKE3 * h)^(1+CKE4) * w1^(1-CKE4) #CKE3 has to have units of N
+     #tmp += CKE2 * (CKE3 * h)^(1+CKE4) * w1^(1-CKE4) #CKE3 has to have units of N
     # tmp += CKE2 * w1^CKE3 * (w2)^(2-CKE3)
     return tmp
 end

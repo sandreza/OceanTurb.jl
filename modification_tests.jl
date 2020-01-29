@@ -4,7 +4,7 @@
 using OceanTurb, Plots
 include("hook.jl")
 st = pwd()
-les = OceananigansData(st * "/nocurv2.jld2")
+les = OceananigansData(st * "/nocurv.jld2")
 curved = true
 flexible = true
 if flexible
@@ -41,17 +41,29 @@ model.solution.T[1:N] = copy(T⁰)
 model.bcs.T.top = FluxBoundaryCondition(les.top_T)
 model.bcs.T.bottom = GradientBoundaryCondition(les.bottom_T)
 # set aside memory
-subsample = 1:10:length(les.t)
-time_index = subsample
-Nt = length(les.t[time_index])
+
+if curved
+    subsample = 1:10:length(t)
+    time_index = subsample
+    Nt = length(t[time_index])
+else
+    subsample = 1:10:length(les.t)
+    time_index = subsample
+    Nt = length(les.t[time_index])
+end
+
 𝒢 = zeros(N, Nt)
 
 # loop the model
 Δt = 60 * 10
 ti = collect(time_index)
 for i in 1:Nt
-    t = les.t[ti[i]]
-    run_until!(model, Δt, t)
+    if curved
+        end_time = t[ti[i]]
+    else
+        end_time = les.t[ti[i]]
+    end
+    run_until!(model, Δt, end_time)
     @. 𝒢[:,i] = model.solution.T[1:N]
 end
 
