@@ -11,6 +11,7 @@ export # This file, core functionality:
     set!,
     reset!,
     @use_pyplot_utils,
+    t_ldiv!,
 
     # utils.jl
     second,

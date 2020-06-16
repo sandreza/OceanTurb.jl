@@ -22,7 +22,7 @@ function test_ldiv(N)
     b = A*x
     test_x = zeros(N)
 
-    ldiv!(test_x, A, b)
+    t_ldiv!(test_x, A, b)
 
     x ≈ test_x
 end
@@ -31,4 +31,3 @@ end
     @test test_tridiagonalsolve()
     @test test_ldiv(10)
 end
-

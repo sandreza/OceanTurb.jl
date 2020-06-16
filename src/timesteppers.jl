@@ -235,7 +235,7 @@ function backward_euler_step!(rhs, lhs, solution, Δt)
             @inbounds rhsϕ[i] = ϕ[i] + Δt*rhsϕ[i]
         end
 
-        ldiv!(ϕ, lhsϕ, rhsϕ)
+        t_ldiv!(ϕ, lhsϕ, rhsϕ)
     end
     return nothing
 end

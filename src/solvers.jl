@@ -8,7 +8,7 @@ by the upper diagonal `u`, diagonal `d`, and lower diagonal `l`
 
 Following https://julialang.org/blog/2016/02/iteration for the multidimensional implementation.
 """
-function ldiv!(x, A::Tridiagonal, b)
+function t_ldiv!(x, A::Tridiagonal, b)
     N = length(x)
     N == length(b) || throw("x and b must have the same length.")
     _tridiagonalsolve!(x, b, A.dl, A.d, A.du, N)
